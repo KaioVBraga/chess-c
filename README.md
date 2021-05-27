@@ -1,4 +1,4 @@
-- Chess C
+**CHESS-C**
 
 The Objective of this game is to allow a play chess through coordinates
 It's two players game (in the future I may create an AI for this game, then it can be a single player)
