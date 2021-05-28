@@ -5,6 +5,8 @@
 #define TRUE 1
 #define FALSE 0
 
+typedef int bool;
+
 char matChess[8][8][10] = {
     "bR1",
     "bN1",
@@ -79,12 +81,12 @@ void showGrid();
 void getMove(char colorTeam);
 int getCollumn();
 int getRow();
-void getPawnMove(char *piece, int row_pos, int col_pos);
-void getKnightMove(char *piece, int row_pos, int col_pos);
-void getBishopMove(char *piece, int row_pos, int col_pos);
-void getRookMove(char *piece, int row_pos, int col_pos);
-void getQueenMove(char *piece, int row_pos, int col_pos);
-void getKingMove(char *piece, int row_pos, int col_pos);
+void getPawnMove(char *piece, int rowPos, int colPos);
+void getKnightMove(char *piece, int rowPos, int colPos);
+void getBishopMove(char *piece, int rowPos, int colPos);
+void getRookMove(char *piece, int rowPos, int colPos);
+void getQueenMove(char *piece, int rowPos, int colPos);
+void getKingMove(char *piece, int rowPos, int colPos);
 
 //MOVES VALIDATION
 int pawnMoveValidation(char *piece);
@@ -139,7 +141,9 @@ void showGrid()
     for (j = 0; j < 8; j++)
     {
       if (matChess[i][j][0] == ' ')
+      {
         printf("|       ");
+      }
       else
       {
         printf("|  %s", matChess[i][j]);
@@ -156,7 +160,8 @@ void showGrid()
 /*Gets the moves from the players*/
 void getMove(char colorTeam)
 {
-  int i_search, j_search, num_col_move, num_row_move, val;
+  int i_search, j_search, numColMove, numRowMove, val;
+  bool isTeamPiece = FALSE;
   char piece[5];
 
   /*Get piece*/
@@ -173,16 +178,14 @@ void getMove(char colorTeam)
         {
           if (!strcmp(piece, matChess[i_search][j_search]))
           {
+            isTeamPiece = TRUE;
             break;
           }
         }
 
-        if (j_search < 8)
+        if (isTeamPiece)
         {
-          if (!strcmp(piece, matChess[i_search][j_search]))
-          {
-            break;
-          }
+          break;
         }
       }
     }
@@ -195,7 +198,7 @@ void getMove(char colorTeam)
     {
       val = FALSE;
     }
-  } while (i_search >= 8 || !val);
+  } while (!isTeamPiece || !val);
 
   /*Movement type selection*/
   if (piece[1] == 'P')
@@ -227,77 +230,77 @@ void getMove(char colorTeam)
 /*Gets the collumns in characters ['a'-'h'] and translate those to integers [0-7]*/
 int getCollumn()
 {
-  int num_col_move;
+  int numColMove;
   char ch_col_move[2];
 
   do
   {
     printf("Enter a collumn: ");
     gets(ch_col_move);
-    num_col_move = ch_col_move[0] - 97;
-  } while (num_col_move >= 8 || num_col_move < 0);
+    numColMove = ch_col_move[0] - 97;
+  } while (numColMove >= 8 || numColMove < 0);
 
-  return num_col_move;
+  return numColMove;
 }
 
 /*Gets the rows in characters ['8'-'1'] and translate those to integers [0-7]*/
 int getRow()
 {
-  int num_row_move;
+  int numRowMove;
   char ch_row_move[2];
 
   do
   {
     printf("Enter a row: ");
     gets(ch_row_move);
-    num_row_move = 8 - (ch_row_move[0] - 48);
-  } while (num_row_move >= 8 || num_row_move < 0);
+    numRowMove = 8 - (ch_row_move[0] - 48);
+  } while (numRowMove >= 8 || numRowMove < 0);
 
-  return num_row_move;
+  return numRowMove;
 }
 
 /*Gets the move of pawns*/
-void getPawnMove(char *piece, int row_pos, int col_pos)
+void getPawnMove(char *piece, int rowPos, int colPos)
 {
-  int i, j, num_row_move, num_col_move, bp_index;
+  int i, j, numRowMove, numColMove, bp_index;
   static int w_twostp[8] = {0, 0, 0, 0, 0, 0, 0, 0}, b_twostp[8] = {0, 0, 0, 0, 0, 0, 0, 0}, big_piece[4] = {2, 2, 2, 1};
   ;
-  char promo_piece[10], new_piece[10];
+  char promo_piece[10], newPiece[10];
 
   if (piece[0] == 'w')
   {
     for (;;)
     {
-      num_col_move = getCollumn();
-      num_row_move = getRow();
+      numColMove = getCollumn();
+      numRowMove = getRow();
 
-      if (matChess[num_row_move][num_col_move][0] != 'w')
+      if (matChess[numRowMove][numColMove][0] != 'w')
       {
         /*Breaks the for if it's making a valid capture*/
-        if (matChess[num_row_move][num_col_move][0] == 'b' && (num_row_move == row_pos - 1) && (num_col_move == col_pos + 1 || num_col_move == col_pos - 1))
+        if (matChess[numRowMove][numColMove][0] == 'b' && (numRowMove == rowPos - 1) && (numColMove == colPos + 1 || numColMove == colPos - 1))
           break;
 
         /*Breaks the for if it's making a non capture movement or enpassant*/
-        if (matChess[num_row_move][num_col_move][0] != 'b')
+        if (matChess[numRowMove][numColMove][0] != 'b')
         {
-          if (num_col_move == col_pos)
+          if (numColMove == colPos)
           {
             /*Double initial move*/
-            if (!w_twostp[piece[2] - 49] && num_row_move == row_pos - 2)
+            if (!w_twostp[piece[2] - 49] && numRowMove == rowPos - 2)
               break;
 
             /*Simple move*/
-            if (num_row_move == row_pos - 1)
+            if (numRowMove == rowPos - 1)
               break;
           }
           else
           {
             /*En passant*/
-            if ((num_col_move == col_pos + 1 || num_col_move == col_pos - 1) && num_row_move == row_pos - 1)
-              if (!initstrcmp(matChess[num_row_move + 1][num_col_move], "bP"))
-                if (b_twostp[matChess[num_row_move + 1][num_col_move][2] - 49] == 1 && num_row_move == 2)
+            if ((numColMove == colPos + 1 || numColMove == colPos - 1) && numRowMove == rowPos - 1)
+              if (!initstrcmp(matChess[numRowMove + 1][numColMove], "bP"))
+                if (b_twostp[matChess[numRowMove + 1][numColMove][2] - 49] == 1 && numRowMove == 2)
                 {
-                  strcpy(matChess[num_row_move + 1][num_col_move], " ");
+                  strcpy(matChess[numRowMove + 1][numColMove], " ");
                   break;
                 }
           }
@@ -315,36 +318,36 @@ void getPawnMove(char *piece, int row_pos, int col_pos)
   {
     for (;;)
     {
-      num_col_move = getCollumn();
-      num_row_move = getRow();
+      numColMove = getCollumn();
+      numRowMove = getRow();
 
-      if (matChess[num_row_move][num_col_move][0] != 'b')
+      if (matChess[numRowMove][numColMove][0] != 'b')
       {
         /*Breaks the for if it's making a valid capture*/
-        if (matChess[num_row_move][num_col_move][0] == 'w' && (num_row_move == row_pos + 1) && (num_col_move == col_pos + 1 || num_col_move == col_pos - 1))
+        if (matChess[numRowMove][numColMove][0] == 'w' && (numRowMove == rowPos + 1) && (numColMove == colPos + 1 || numColMove == colPos - 1))
           break;
 
         /*Breaks the for if it's making a non capture movement or enpassant*/
-        if (matChess[num_row_move][num_col_move][0] != 'w')
+        if (matChess[numRowMove][numColMove][0] != 'w')
         {
-          if (num_col_move == col_pos)
+          if (numColMove == colPos)
           {
             /*Double initial move*/
-            if (!b_twostp[piece[2] - 49] && num_row_move == row_pos + 2)
+            if (!b_twostp[piece[2] - 49] && numRowMove == rowPos + 2)
               break;
 
             /*Simple move*/
-            if (num_row_move == row_pos + 1)
+            if (numRowMove == rowPos + 1)
               break;
           }
           else
           {
             /*En passant*/
-            if ((num_col_move == col_pos + 1 || num_col_move == col_pos - 1) && num_row_move == row_pos + 1)
-              if (!initstrcmp(matChess[num_row_move - 1][num_col_move], "wP"))
-                if (w_twostp[matChess[num_row_move - 1][num_col_move][2] - 49] == 1 && num_row_move == 5)
+            if ((numColMove == colPos + 1 || numColMove == colPos - 1) && numRowMove == rowPos + 1)
+              if (!initstrcmp(matChess[numRowMove - 1][numColMove], "wP"))
+                if (w_twostp[matChess[numRowMove - 1][numColMove][2] - 49] == 1 && numRowMove == 5)
                 {
-                  strcpy(matChess[num_row_move - 1][num_col_move], " ");
+                  strcpy(matChess[numRowMove - 1][numColMove], " ");
                   break;
                 }
           }
@@ -359,7 +362,7 @@ void getPawnMove(char *piece, int row_pos, int col_pos)
     b_twostp[piece[2] - 49]++;
   }
 
-  if (num_row_move == 0 || num_row_move == 7)
+  if (numRowMove == 0 || numRowMove == 7)
   {
     do
     {
@@ -384,69 +387,69 @@ void getPawnMove(char *piece, int row_pos, int col_pos)
 
     big_piece[bp_index]++;
 
-    new_piece[0] = piece[0];
-    new_piece[1] = promo_piece[0];
-    new_piece[2] = big_piece[bp_index] + 48;
-    new_piece[3] = '\0';
+    newPiece[0] = piece[0];
+    newPiece[1] = promo_piece[0];
+    newPiece[2] = big_piece[bp_index] + 48;
+    newPiece[3] = '\0';
 
-    strcpy(matChess[num_row_move][num_col_move], new_piece);
-    strcpy(matChess[row_pos][col_pos], " ");
+    strcpy(matChess[numRowMove][numColMove], newPiece);
+    strcpy(matChess[rowPos][colPos], " ");
   }
   else
   {
-    strcpy(matChess[num_row_move][num_col_move], piece);
-    strcpy(matChess[row_pos][col_pos], " ");
+    strcpy(matChess[numRowMove][numColMove], piece);
+    strcpy(matChess[rowPos][colPos], " ");
   }
 }
 
-void getKnightMove(char *piece, int row_pos, int col_pos)
+void getKnightMove(char *piece, int rowPos, int colPos)
 {
-  int i, j, num_row_move, num_col_move;
+  int i, j, numRowMove, numColMove;
 
   for (;;)
   {
-    num_col_move = getCollumn();
-    num_row_move = getRow();
+    numColMove = getCollumn();
+    numRowMove = getRow();
 
     /*Checks if the square that the knight is moving to isn't an ally piece*/
-    if (matChess[num_row_move][num_col_move][0] != piece[0])
+    if (matChess[numRowMove][numColMove][0] != piece[0])
       /*Checks if the movement is a 'L'*/
-      if (num_row_move == row_pos - 1 || num_row_move == row_pos + 1)
+      if (numRowMove == rowPos - 1 || numRowMove == rowPos + 1)
       {
-        if ((num_col_move == col_pos + 2 || num_col_move == col_pos - 2))
+        if ((numColMove == colPos + 2 || numColMove == colPos - 2))
           break;
       }
-      else if (num_row_move == row_pos - 2 || num_row_move == row_pos + 2)
+      else if (numRowMove == rowPos - 2 || numRowMove == rowPos + 2)
       {
-        if ((num_col_move == col_pos + 1 || num_col_move == col_pos - 1))
+        if ((numColMove == colPos + 1 || numColMove == colPos - 1))
           break;
       }
   }
 
-  strcpy(matChess[num_row_move][num_col_move], piece);
-  strcpy(matChess[row_pos][col_pos], " ");
+  strcpy(matChess[numRowMove][numColMove], piece);
+  strcpy(matChess[rowPos][colPos], " ");
 }
 
-void getBishopMove(char *piece, int row_pos, int col_pos)
+void getBishopMove(char *piece, int rowPos, int colPos)
 {
-  int i, j, num_row_move, num_col_move, row_pace, col_pace, found;
+  int i, j, numRowMove, numColMove, rowPace, colPace, found;
 
   for (;;)
   {
-    num_col_move = getCollumn();
-    num_row_move = getRow();
+    numColMove = getCollumn();
+    numRowMove = getRow();
 
     /*Checks if the square that the bishop is moving to isn't an ally piece*/
-    if (matChess[num_row_move][num_col_move][0] != piece[0])
-      if ((num_row_move - row_pos == num_col_move - col_pos) || (num_row_move - row_pos == -(num_col_move - col_pos)))
+    if (matChess[numRowMove][numColMove][0] != piece[0])
+      if ((numRowMove - rowPos == numColMove - colPos) || (numRowMove - rowPos == -(numColMove - colPos)))
       {
-        /*if the the movement is growing vertically then row_pace is 1 else it's -1, them same thing is horizontally with col_pace*/
-        row_pace = (num_row_move - row_pos > 0) ? 1 : (-1);
-        col_pace = (num_col_move - col_pos > 0) ? 1 : (-1);
+        /*if the the movement is growing vertically then rowPace is 1 else it's -1, them same thing is horizontally with colPace*/
+        rowPace = (numRowMove - rowPos > 0) ? 1 : (-1);
+        colPace = (numColMove - colPos > 0) ? 1 : (-1);
 
-        /*searches for a piece in the way of the bishop, if row_pace < 0 then condition is i<num_row_move else then i>num_row_move*/
+        /*searches for a piece in the way of the bishop, if rowPace < 0 then condition is i<numRowMove else then i>numRowMove*/
         found = 0;
-        for ((i = row_pos + row_pace, j = col_pos + col_pace); (row_pace > 0 ? i < num_row_move : i > num_row_move); (i += row_pace, j += col_pace))
+        for ((i = rowPos + rowPace, j = colPos + colPace); (rowPace > 0 ? i < numRowMove : i > numRowMove); (i += rowPace, j += colPace))
           if (matChess[i][j][0] != ' ')
           {
             found = 1;
@@ -459,30 +462,30 @@ void getBishopMove(char *piece, int row_pos, int col_pos)
       }
   }
 
-  strcpy(matChess[num_row_move][num_col_move], piece);
-  strcpy(matChess[row_pos][col_pos], " ");
+  strcpy(matChess[numRowMove][numColMove], piece);
+  strcpy(matChess[rowPos][colPos], " ");
 }
 
-void getRookMove(char *piece, int row_pos, int col_pos)
+void getRookMove(char *piece, int rowPos, int colPos)
 {
-  int i, j, num_row_move, num_col_move, row_pace, col_pace, found;
+  int i, j, numRowMove, numColMove, rowPace, colPace, found;
 
   for (;;)
   {
-    num_col_move = getCollumn();
-    num_row_move = getRow();
+    numColMove = getCollumn();
+    numRowMove = getRow();
 
     /*Checks if the square that the bishop is moving to isn't an ally piece*/
-    if (matChess[num_row_move][num_col_move][0] != piece[0])
-      if (num_row_move == row_pos)
+    if (matChess[numRowMove][numColMove][0] != piece[0])
+      if (numRowMove == rowPos)
       {
-        /*if the the movement is growing vertically then row_pace is 1 else it's -1, them same thing is horizontally with col_pace*/
-        col_pace = (num_col_move - col_pos > 0) ? 1 : (-1);
+        /*if the the movement is growing vertically then rowPace is 1 else it's -1, them same thing is horizontally with colPace*/
+        colPace = (numColMove - colPos > 0) ? 1 : (-1);
 
-        /*searches for a piece in the way of the bishop, if row_pace < 0 then condition is i<num_row_move else then i>num_row_move*/
+        /*searches for a piece in the way of the bishop, if rowPace < 0 then condition is i<numRowMove else then i>numRowMove*/
         found = 0;
-        for ((j = col_pos + col_pace); (col_pace > 0 ? j < num_col_move : j > num_col_move); j += col_pace)
-          if (matChess[row_pos][j][0] != ' ')
+        for ((j = colPos + colPace); (colPace > 0 ? j < numColMove : j > numColMove); j += colPace)
+          if (matChess[rowPos][j][0] != ' ')
           {
             found = 1;
             if (found)
@@ -492,15 +495,15 @@ void getRookMove(char *piece, int row_pos, int col_pos)
         if (!found)
           break;
       }
-      else if (num_col_move == col_pos)
+      else if (numColMove == colPos)
       {
-        /*if the the movement is growing vertically then row_pace is 1 else it's -1, them same thing is horizontally with col_pace*/
-        row_pace = (num_row_move - row_pos > 0) ? 1 : (-1);
+        /*if the the movement is growing vertically then rowPace is 1 else it's -1, them same thing is horizontally with colPace*/
+        rowPace = (numRowMove - rowPos > 0) ? 1 : (-1);
 
-        /*searches for a piece in the way of the bishop, if row_pace < 0 then condition is i<num_row_move else then i>num_row_move*/
+        /*searches for a piece in the way of the bishop, if rowPace < 0 then condition is i<numRowMove else then i>numRowMove*/
         found = 0;
-        for ((i = row_pos + row_pace); (row_pace > 0 ? i < num_row_move : i > num_row_move); i += row_pace)
-          if (matChess[i][col_pos][0] != ' ')
+        for ((i = rowPos + rowPace); (rowPace > 0 ? i < numRowMove : i > numRowMove); i += rowPace)
+          if (matChess[i][colPos][0] != ' ')
           {
             found = 1;
             if (found)
@@ -512,31 +515,31 @@ void getRookMove(char *piece, int row_pos, int col_pos)
       }
   }
 
-  strcpy(matChess[num_row_move][num_col_move], piece);
-  strcpy(matChess[row_pos][col_pos], " ");
+  strcpy(matChess[numRowMove][numColMove], piece);
+  strcpy(matChess[rowPos][colPos], " ");
 }
 
-void getQueenMove(char *piece, int row_pos, int col_pos)
+void getQueenMove(char *piece, int rowPos, int colPos)
 {
-  int i, j, num_row_move, num_col_move, row_pace, col_pace, found;
+  int i, j, numRowMove, numColMove, rowPace, colPace, found;
 
   for (;;)
   {
-    num_col_move = getCollumn();
-    num_row_move = getRow();
+    numColMove = getCollumn();
+    numRowMove = getRow();
 
     /*Checks if the square that the bishop is moving to isn't an ally piece*/
-    if (matChess[num_row_move][num_col_move][0] != piece[0])
+    if (matChess[numRowMove][numColMove][0] != piece[0])
       /*Breaks the for if it's a valid bishop's move*/
-      if ((num_row_move - row_pos == num_col_move - col_pos) || (num_row_move - row_pos == -(num_col_move - col_pos)))
+      if ((numRowMove - rowPos == numColMove - colPos) || (numRowMove - rowPos == -(numColMove - colPos)))
       {
-        /*if the the movement is growing vertically then row_pace is 1 else it's -1, them same thing is horizontally with col_pace*/
-        row_pace = (num_row_move - row_pos > 0) ? 1 : (-1);
-        col_pace = (num_col_move - col_pos > 0) ? 1 : (-1);
+        /*if the the movement is growing vertically then rowPace is 1 else it's -1, them same thing is horizontally with colPace*/
+        rowPace = (numRowMove - rowPos > 0) ? 1 : (-1);
+        colPace = (numColMove - colPos > 0) ? 1 : (-1);
 
-        /*searches for a piece in the way of the bishop, if row_pace < 0 then condition is i<num_row_move else then i>num_row_move*/
+        /*searches for a piece in the way of the bishop, if rowPace < 0 then condition is i<numRowMove else then i>numRowMove*/
         found = 0;
-        for ((i = row_pos + row_pace, j = col_pos + col_pace); (row_pace > 0 ? i < num_row_move : i > num_row_move); (i += row_pace, j += col_pace))
+        for ((i = rowPos + rowPace, j = colPos + colPace); (rowPace > 0 ? i < numRowMove : i > numRowMove); (i += rowPace, j += colPace))
           if (matChess[i][j][0] != ' ')
           {
             found = 1;
@@ -550,15 +553,15 @@ void getQueenMove(char *piece, int row_pos, int col_pos)
       else
       {
         /*Breaks the for if it's a valid rook's move*/
-        if (num_row_move == row_pos)
+        if (numRowMove == rowPos)
         {
-          /*if the the movement is growing vertically then row_pace is 1 else it's -1, them same thing is horizontally with col_pace*/
-          col_pace = (num_col_move - col_pos > 0) ? 1 : (-1);
+          /*if the the movement is growing vertically then rowPace is 1 else it's -1, them same thing is horizontally with colPace*/
+          colPace = (numColMove - colPos > 0) ? 1 : (-1);
 
-          /*searches for a piece in the way of the bishop, if row_pace < 0 then condition is i<num_row_move else then i>num_row_move*/
+          /*searches for a piece in the way of the bishop, if rowPace < 0 then condition is i<numRowMove else then i>numRowMove*/
           found = 0;
-          for ((j = col_pos + col_pace); (col_pace > 0 ? j < num_col_move : j > num_col_move); j += col_pace)
-            if (matChess[row_pos][j][0] != ' ')
+          for ((j = colPos + colPace); (colPace > 0 ? j < numColMove : j > numColMove); j += colPace)
+            if (matChess[rowPos][j][0] != ' ')
             {
               found = 1;
               if (found)
@@ -568,15 +571,15 @@ void getQueenMove(char *piece, int row_pos, int col_pos)
           if (!found)
             break;
         }
-        else if (num_col_move == col_pos)
+        else if (numColMove == colPos)
         {
-          /*if the the movement is growing vertically then row_pace is 1 else it's -1, them same thing is horizontally with col_pace*/
-          row_pace = (num_row_move - row_pos > 0) ? 1 : (-1);
+          /*if the the movement is growing vertically then rowPace is 1 else it's -1, them same thing is horizontally with colPace*/
+          rowPace = (numRowMove - rowPos > 0) ? 1 : (-1);
 
-          /*searches for a piece in the way of the bishop, if row_pace < 0 then condition is i<num_row_move else then i>num_row_move*/
+          /*searches for a piece in the way of the bishop, if rowPace < 0 then condition is i<numRowMove else then i>numRowMove*/
           found = 0;
-          for ((i = row_pos + row_pace); (row_pace > 0 ? i < num_row_move : i > num_row_move); i += row_pace)
-            if (matChess[i][col_pos][0] != ' ')
+          for ((i = rowPos + rowPace); (rowPace > 0 ? i < numRowMove : i > numRowMove); i += rowPace)
+            if (matChess[i][colPos][0] != ' ')
             {
               found = 1;
               if (found)
@@ -589,45 +592,45 @@ void getQueenMove(char *piece, int row_pos, int col_pos)
       }
   }
 
-  strcpy(matChess[num_row_move][num_col_move], piece);
-  strcpy(matChess[row_pos][col_pos], " ");
+  strcpy(matChess[numRowMove][numColMove], piece);
+  strcpy(matChess[rowPos][colPos], " ");
 }
 
-void getKingMove(char *piece, int row_pos, int col_pos)
+void getKingMove(char *piece, int rowPos, int colPos)
 {
-  int i, j, num_row_move, num_col_move, row_pace, col_pace, found;
+  int i, j, numRowMove, numColMove, rowPace, colPace, found;
 
   for (;;)
   {
-    num_col_move = getCollumn();
-    num_row_move = getRow();
+    numColMove = getCollumn();
+    numRowMove = getRow();
 
     /*Checks if the square that the bishop is moving to isn't an ally piece*/
-    if (matChess[num_row_move][num_col_move][0] != piece[0])
+    if (matChess[numRowMove][numColMove][0] != piece[0])
       /*Breaks the for if it's a valid bishop's move, one unit*/
-      if ((num_row_move - row_pos == num_col_move - col_pos) || (num_row_move - row_pos == -(num_col_move - col_pos)))
+      if ((numRowMove - rowPos == numColMove - colPos) || (numRowMove - rowPos == -(numColMove - colPos)))
       {
-        if ((num_row_move - row_pos == 1) || (num_row_move - row_pos == -1))
+        if ((numRowMove - rowPos == 1) || (numRowMove - rowPos == -1))
           break;
       }
       else
       {
         /*Breaks the for if it's a valid rook's move, one unit*/
-        if (num_row_move == row_pos)
+        if (numRowMove == rowPos)
         {
-          if ((num_col_move - col_pos == 1) || (num_col_move - col_pos == -1))
+          if ((numColMove - colPos == 1) || (numColMove - colPos == -1))
             break;
         }
-        else if (num_col_move == col_pos)
+        else if (numColMove == colPos)
         {
-          if ((num_row_move - row_pos == 1) || (num_row_move - row_pos == -1))
+          if ((numRowMove - rowPos == 1) || (numRowMove - rowPos == -1))
             break;
         }
       }
   }
 
-  strcpy(matChess[num_row_move][num_col_move], piece);
-  strcpy(matChess[row_pos][col_pos], " ");
+  strcpy(matChess[numRowMove][numColMove], piece);
+  strcpy(matChess[rowPos][colPos], " ");
 }
 
 int pawnMoveValidation(char *piece)
