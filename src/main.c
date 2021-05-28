@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define TRUE 1
+#define FALSE 0
+
 char matChess[8][8][10] = {
     "bR1",
     "bN1",
@@ -73,7 +76,7 @@ char matChess[8][8][10] = {
 void showGrid();
 
 //MOVES
-void getMove(char color_team);
+void getMove(char colorTeam);
 int getCollumn();
 int getRow();
 void getPawnMove(char *piece, int row_pos, int col_pos);
@@ -151,7 +154,7 @@ void showGrid()
 }
 
 /*Gets the moves from the players*/
-void getMove(char color_team)
+void getMove(char colorTeam)
 {
   int i_search, j_search, num_col_move, num_row_move, val;
   char piece[5];
@@ -161,23 +164,37 @@ void getMove(char color_team)
   {
     printf("Enter a piece: ");
     gets(piece);
-    if (piece[0] == color_team)
+
+    if (piece[0] == colorTeam)
+    {
       for (i_search = 0; i_search < 8; i_search++)
       {
         for (j_search = 0; j_search < 8; j_search++)
+        {
           if (!strcmp(piece, matChess[i_search][j_search]))
+          {
             break;
+          }
+        }
+
         if (j_search < 8)
+        {
           if (!strcmp(piece, matChess[i_search][j_search]))
+          {
             break;
+          }
+        }
       }
+    }
 
     if (piece[1] == 'P')
     {
       val = pawnMoveValidation(piece);
     }
     else
-      i_search = 8;
+    {
+      val = FALSE;
+    }
   } while (i_search >= 8 || !val);
 
   /*Movement type selection*/
